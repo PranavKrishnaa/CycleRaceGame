@@ -1,190 +1,66 @@
-var path,mainCyclist;
-var player1,player2,player3;
-var pathImg,mainRacerImg1,mainRacerImg2;
+var BG, BG_Img;
+var cat, catIMG;
+var mouse;
 
-var oppPink1Img,oppPink2Img;
-var oppYellow1Img,oppYellow2Img;
-var oppRed1Img,oppRed2Img;
-var gameOverImg,cycleBell;
+var gameState = "PLAY" ;
+function preload() {
+  backImg = loadImage("garden.png")
+  catImg1= loadAnimation("cat1.png");
+  catImg2=loadAnimation("cat2.png","cat3.png");
+  catImg3= loadAnimation("cat4.png");
+  mouseImg1=loadAnimation("mouse1.png");
+  mouseImg2= loadAnimation("mouse2.png","mouse3.png");
+  mouseImg3=loadAnimation("mouse4.png");
 
-var pinkCG, yellowCG,redCG; 
-
-var END =0;
-var PLAY =1;
-var gameState = PLAY;
-
-var distance=0;
-var gameOver, restart;
-
-function preload(){
-  pathImg = loadImage("Road.png");
-  mainRacerImg1 = loadAnimation("mainPlayer1.png","mainPlayer2.png");
-  mainRacerImg2= loadAnimation("mainPlayer3.png");
-  
-  oppPink1Img = loadAnimation("opponent1.png","opponent2.png");
-  oppPink2Img = loadAnimation("opponent3.png");
-  
-  oppYellow1Img = loadAnimation("opponent4.png","opponent5.png");
-  oppYellow2Img = loadAnimation("opponent6.png");
-  
-  oppRed1Img = loadAnimation("opponent7.png","opponent8.png");
-  oppRed2Img = loadAnimation("opponent9.png");
-  
-  cycleBell = loadSound("bell.mp3");
-  gameOverImg = loadImage("gameOver.png");
 }
+function setup() {
+  createCanvas(800,600);
+  //To create background 
+  BG = createSprite(400,250, 50, 50);
+  BG.addImage(backImg);
+  BG.scale = 1;
 
-function setup(){
-  
-createCanvas(1200,300);
-// Moving background
-path=createSprite(100,150);
-path.addImage(pathImg);
-path.velocityX = -5;
+  //To create cat sprite
+  cat = createSprite(600,500,1,1);
+  cat.addAnimation("catRunning", catImg1);
+  cat.scale = 0.2;
 
-//creating boy running
-mainCyclist  = createSprite(70,150);
-mainCyclist.addAnimation("SahilRunning",mainRacerImg1);
-mainCyclist.scale=0.07;
-  
-//set collider for mainCyclist
-mainCyclist.debug = false;
-mainCyclist.setCollider("circle",3,3);
-  
-gameOver = createSprite(650,150);
-gameOver.addImage(gameOverImg);
-gameOver.scale = 0.8;
-gameOver.visible = false;  
-  
-pinkCG = new Group();
-yellowCG = new Group();
-redCG = new Group();
-  
+  //To create mouse and adds the image to it
+  mouse = createSprite(200,500,10,10);
+  mouse.addAnimation("mouseRunning", mouseImg1);
+  mouse.scale = 0.15;
 }
-
+ 
 function draw() {
   background(0);
-  
   drawSprites();
-  textSize(20);
-  fill(255);
-  text("Distance: "+ distance,900,30);
-  
-  if(gameState===PLAY){
-   distance = distance + Math.round(getFrameRate()/50);
-   path.velocityX = -(6 + 2*distance/150);
-    
-    //code to reset the background
-  if(path.x < 0 ){
-    path.x = width/2;
+ 
+  if(cat.x - mouse.x < (cat.width - mouse.width)/2) {
+        //To stop the cat's velocity
+        cat.velocityX= 0;
+        //To change the animation
+        cat.addAnimation("tomLastImage", catImg3);
+        cat.x = 300;
+        //To scale the cat image
+        cat.scale= 0.2;
+        cat.changeAnimation("tomLastImage");
+        mouse.addAnimation("jerryLastImage", mouseImg3);
+        //To scale the mouse image
+        mouse.scale= 0.15;
+        mouse.changeAnimation("jerryLastImage");
+    }  
+}
+
+function keyPressed(){
+
+  if(keyCode === LEFT_ARROW){
+      //cat moves left and changes animation
+      cat.velocityX = -5;
+      cat.addAnimation("catRunning", catImg2);
+      cat.changeAnimation("something");
+      //mouse changes it's animation
+      mouse.addAnimation("mouseSomething", mouseImg2);
+      mouse.changeAnimation("something2");
   }
-  
-   mainCyclist.y = World.mouseY;
-  
-   edges= createEdgeSprites();
-   mainCyclist.collide(edges);
-
-    //code to play cycle bell sound
-  if(keyDown("space")) {
-    cycleBell.play();
-  }
-    
-    if(pinkCG.isTouching(mainCyclist)){
-     gameState = END;
-     player1.velocityY = 0;
-     player1.addAnimation("opponentPlayer1",oppPink2Img);
-    }
-    
-    if(yellowCG.isTouching(mainCyclist)){
-      gameState = END;
-      player2.velocityY = 0;
-      player2.addAnimation("opponentPlayer2",oppYellow2Img);
-    }
-    
-    if(redCG.isTouching(mainCyclist)){
-      gameState = END;
-      player3.velocityY = 0;
-      player3.addAnimation("opponentPlayer3",oppRed2Img);
-    }
-  
-  //creating continous opponent players
-  var select_oppPlayer = Math.round(random(1,3));
-  
-  if (World.frameCount % 150 == 0) {
-    if (select_oppPlayer == 1) {
-      pinkCyclists();
-    } else if (select_oppPlayer == 2) {
-      yellowCyclists();
-    } else {
-      redCyclists();
-    }
-  }
-     
-}
-  else if (gameState === END) {
-    //Add code to show restart game instruction in text here
-    textSize(20);
-    text("Press Up Arrow to Restart the Game!",500,200);  
-  
-    gameOver.visible = true; 
-   
-    mainCyclist.velocityX = 0;
-    mainCyclist.addAnimation("SahilRunning", mainRacerImg2);
-    path.velocityX = 0;  
-    
-    //To create a button for restarting the game
-    if(keyDown(UP_ARROW)){
-    reset();
-  }
-    
-    pinkCG.setVelocityXEach(0);
-    pinkCG.setLifetimeEach(-1);
-  
-    yellowCG.setVelocityXEach(0);
-    yellowCG.setLifetimeEach(-1);
-  
-    redCG.setVelocityXEach(0);
-    redCG.setLifetimeEach(-1);
-
-    
-}
 }
 
-function pinkCyclists(){
-        player1 =createSprite(1100,Math.round(random(50, 250)));
-        player1.scale =0.06;
-        player1.velocityX = -(6 + 2*distance/150);
-        player1.addAnimation("opponentPlayer1",oppPink1Img);
-        player1.setLifetime=170;
-        pinkCG.add(player1);
-}
-
-function yellowCyclists(){
-        player2 =createSprite(1100,Math.round(random(50, 250)));
-        player2.scale =0.06;
-        player2.velocityX = -(6 + 2*distance/150);
-        player2.addAnimation("opponentPlayer2",oppYellow1Img);
-        player2.setLifetime=170;
-        yellowCG.add(player2);
-}
-
-function redCyclists(){
-        player3 =createSprite(1100,Math.round(random(50, 250)));
-        player3.scale =0.06;
-        player3.velocityX = -(6 + 2*distance/150);
-        player3.addAnimation("opponentPlayer3",oppRed1Img);
-        player3.setLifetime=170;
-        redCG.add(player3);
-}
-
-//create reset function here
-
-  function reset() {
-    gameState = PLAY; 
-    mainCyclist.addAnimation("SahilRunning", mainRacerImg1);
-    gameOver.visible = false;
-    pinkCG.destroyEach();
-    yellowCG.destroyEach();
-    redCG.destroyEach();
-    distance = 0;
-  }
